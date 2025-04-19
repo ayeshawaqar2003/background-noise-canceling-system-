@@ -1,0 +1,70 @@
+% Load the clear speech signal
+[clearspeech, clearfs] = audioread("cleancall.mp3");
+
+% Load the noisy speech signal
+[noisyspeech, noisyfs] = audioread('call.mp3');
+
+noise = audioread('call.mp3');
+lenClear = length(clearspeech); 
+lenNoise = length(noise);
+
+% Adjust the length of the noise signal
+if lenClear > lenNoise
+    noise = [noise; zeros(lenClear - lenNoise, 1)];
+else
+    noise = noise(1:lenClear);
+end
+
+% Initialize variables
+primarySignal = clearspeech;
+filterOrder = 32;
+learningRate = 0.01;
+filterWeights = zeros(1, filterOrder);
+weightsBuffer = zeros(length(primarySignal), filterOrder);
+
+% Adaptive filtering loop
+for i = filterOrder:length(primarySignal)
+    inputVector = primarySignal(i:-1:i-filterOrder+1)';
+    desiredOutput = clearspeech(i);
+    output = filterWeights * inputVector';
+    error = desiredOutput - output;
+    filterWeights = filterWeights + learningRate * error * inputVector;
+    weightsBuffer(i, :) = filterWeights;
+end
+
+% Apply the adaptive filter
+filteredOutput = filter(filterWeights, 1, primarySignal);
+
+% Plotting
+timeVector = (0: lenClear-1) / clearfs;
+figure;
+subplot(3, 1, 1);
+plot(timeVector', primarySignal);
+title('Original Speech');
+xlabel('Time (s)');
+ylabel('Amplitude');
+
+subplot(3, 1, 2);
+plot(timeVector', noise);
+title('Noise');
+xlabel('Time (s)');
+ylabel('Amplitude');
+
+subplot(3, 1, 3);
+plot(timeVector', filteredOutput);
+title('Filtered Output');
+xlabel('Time (s)');
+ylabel('Amplitude');
+
+% Play the original noisy signal
+sound(noisyspeech, noisyfs);
+
+% Pause to allow listening to the original signal
+pause(length(noisyspeech) / noisyfs);
+
+% Play the filtered output
+sound(filteredOutput, clearfs);
+
+% Save the filtered output as an audio file
+outputFilename = 'cleancall_filtered.mp3';
+audiowrite(outputFilename, filteredOutput, clearfs);
