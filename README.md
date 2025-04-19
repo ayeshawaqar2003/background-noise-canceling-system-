@@ -15,3 +15,4 @@ Running an adaptive loop to update weights and reduce noise.
 Comparing the filtered output with the original noisy signal audibly and visually through waveform plots.
 
 The project demonstrates the effectiveness of adaptive filters for real-time speech enhancement and serves as a practical application of signal processing in communication systems
+![image](https://github.com/user-attachments/assets/1e5451c8-176f-43e5-aa32-df480c3dcb25)
